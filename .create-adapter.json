@@ -1,0 +1,54 @@
+{
+	"expert": "yes",
+	"cli": false,
+	"adapterName": "tech-emodul-i-3",
+	"title": "emodul i-3 heating control",
+	"description": "Connect to webservice emodul.eu to read an write controler parameter",
+	"keywords": [
+		"emodul i-3 heating"
+	],
+	"contributors": "",
+	"authorName": "Hubert Boesl",
+	"authorGithub": "boeslh",
+	"authorEmail": "hubert@boesls.de",
+	"features": [
+		"adapter"
+	],
+	"adminFeatures": [
+		"custom"
+	],
+	"type": "climate-control",
+	"startMode": "daemon",
+	"connectionType": "cloud",
+	"dataSource": "poll",
+	"connectionIndicator": "no",
+	"adapterSettings": [
+		{
+			"key": "User",
+			"label": "User",
+			"inputType": "text",
+			"defaultValue": ""
+		},
+		{
+			"key": "Password",
+			"label": "Password",
+			"inputType": "text",
+			"defaultValue": ""
+		}
+	],
+	"language": "JavaScript",
+	"nodeVersion": "20",
+	"adminUi": "json",
+	"releaseScript": "yes",
+	"indentation": "Tab",
+	"quotes": "double",
+	"tools": [
+		"ESLint",
+		"type checking"
+	],
+	"gitRemoteProtocol": "HTTPS",
+	"license": "MIT License",
+	"dependabot": "yes",
+	"target": "github",
+	"creatorVersion": "2.6.5"
+}
