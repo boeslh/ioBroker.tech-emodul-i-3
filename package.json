@@ -9,7 +9,8 @@
   "homepage": "https://github.com/boeslh/ioBroker.tech-emodul-i-3",
   "license": "MIT",
   "keywords": [
-    "emodul i-3 heating"
+    "emodul i-3 heating",
+    "ioBroker"
   ],
   "repository": {
     "type": "git",

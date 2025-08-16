@@ -63,7 +63,6 @@ It is recommended that you add your own tests into the mix.
 ### Publishing the adapter
 Using GitHub Actions, you can enable automatic releases on npm whenever you push a new git tag that matches the form 
 `v<major>.<minor>.<patch>`. We **strongly recommend** that you do. The necessary steps are described in `.github/workflows/test-and-release.yml`.
-v0.1.0
 
 Since you installed the release script, you can create a new
 release simply by calling:
@@ -94,10 +93,10 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 	### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
+### 0.1.0 (2025-08-16)
 * (Hubert Boesl) first Realase that works. No i18n
 
-### **WORK IN PROGRESS**
+### 0.0.1 (2025-08-16)
 * (Hubert Boesl) initial release
 
 ## License

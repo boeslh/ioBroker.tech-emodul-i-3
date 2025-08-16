@@ -129,7 +129,7 @@ class TechEmodulI3 extends utils.Adapter {
 		// The adapters config (in the instance object everything under the attribute "native") is accessible via
 		// this.config:
 		this.log.info("config User: " + this.config.User);
-		this.log.info("config Password: " + this.config.Password);
+		//this.log.info("config Password: " + this.config.Password);
 		this.log.info("config API-URL: " + this.config.APIURL);
 		this.log.info("config Intervall: " + this.config.Intervall);
 
