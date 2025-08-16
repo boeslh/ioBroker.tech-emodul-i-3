@@ -1,5 +1,7 @@
 {
-	"tech-emodul-i-3 adapter settings": "Paramètres d'adaptateur pour tech-emodul-i-3",
-	"User": "User",
-	"Password": "Password"
+    "tech-emodul-i-3 adapter settings": "Paramètres d'adaptateur pour tech-emodul-i-3",
+    "User": "User",
+    "Password": "Password",
+    "API-URL": "Api-url",
+    "Intervall": "Interdire"
 }

@@ -7,6 +7,7 @@
 // The adapter-core module gives you access to the core ioBroker functions
 // you need to create an adapter
 const utils = require("@iobroker/adapter-core");
+const axios = require('axios');
 
 // Load your modules here, e.g.:
 // const fs = require("fs");
@@ -28,6 +29,37 @@ class TechEmodulI3 extends utils.Adapter {
 		this.on("unload", this.onUnload.bind(this));
 	}
 
+	async getAuthToken() {
+    	/** Authentifiziert sich an der API und gibt ein Token zurück. */
+    	const resp = await axios.post(`${this.config.APIURL}/authentication`, {
+        	username: this.config.User,
+        	password: this.config.Password
+    	});
+    	return [resp.data.user_id, resp.data.token];
+	}
+	
+	async getModules(userid, token) {
+    	/** Liest die Liste aller Module, auf die der Benutzer Zugriff hat. */
+    	const headers = { "Authorization": `Bearer ${token}` };
+    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules`, { headers: headers });
+    	return resp.data;
+	}
+
+	async getModuleData(userid, token, udid) {
+    	/** Liest alle Daten eines spezifischen Moduls aus. */
+    	const headers = { "Authorization": `Bearer ${token}` };
+    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}`, { headers: headers });
+    	return resp.data;
+	}
+
+	async getMenuData(userid, token, udid) {
+    	/** Liest alle Menüdaten eines spezifischen Moduls aus. */
+    	const headers = { "Authorization": `Bearer ${token}` };
+    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU`, { headers: headers });
+    	return resp.data;
+	}
+
+
 	/**
 	 * Is called when databases are connected and adapter received configuration.
 	 */
@@ -38,26 +70,237 @@ class TechEmodulI3 extends utils.Adapter {
 		// this.config:
 		this.log.info("config User: " + this.config.User);
 		this.log.info("config Password: " + this.config.Password);
+		this.log.info("config API-URL: " + this.config.APIURL);
+		this.log.info("config Intervall: " + this.config.Intervall);
+
+		if (!this.config.User) {
+			this.log.warn("User is not set in the adapter configuration. Please set it in the adapter settings.");
+			return;
+		}
 
 		/*
 		For every state in the system there has to be also an object of type state
 		Here a simple template for a boolean variable named "testVariable"
 		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
 		*/
-		await this.setObjectNotExistsAsync("testVariable", {
+		await this.setObjectNotExistsAsync("UserID", {
 			type: "state",
 			common: {
-				name: "testVariable",
-				type: "boolean",
-				role: "indicator",
+				name: "UserID",
+				type: "number",
+				role: "value",
 				read: true,
-				write: true,
+				write: true
+			},
+			native: {},
+		});
+		const [userid, token] = await this.getAuthToken();
+		await this.setStateAsync("UserID", { val: userid, ack: true });
+		this.log.info("UserID: " + userid);
+		const s_userid = userid.toString();
+
+		await this.setObjectNotExistsAsync(s_userid, {
+			type: "folder",
+			common: {
+				name: s_userid
 			},
 			native: {},
 		});
 
+		const modules = await this.getModules(userid, token);
+		const allData = {};
+        const allMenu = {};
+
+        for (const module of modules) {
+            const modId = module.id;
+            const udid = module.udid;
+            const modName = module.name || modId;
+			this.log.info(`Module: ${modName} (ID: ${modId}, UDID: ${udid})`);
+            await this.setObjectNotExistsAsync(`${s_userid}.${udid}`, {
+				type: "folder",
+				common: {
+					name: udid
+				},
+				native: {},
+			});
+			await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Name`, {
+				type: "state",
+				common: {
+					name: "Name",
+					type: "string",
+					role: "value",
+					read: true,
+					write: true
+				},
+				native: {},
+			});
+			await this.setState(`${s_userid}.${udid}.Name`,`${modName}`, true);
+			allData[modName] = await this.getModuleData(userid, token, udid);
+            // allMenu[modName] = await getMenuData(userid, token, udid);
+        
+			const tiles = allData[`${modName}`]["tiles"];
+			for (const tile of tiles) {
+				const params = tile.params || {};
+				switch (params.txtId) {
+					case 192:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.ZH-Sensor`, {
+							type: "state",
+							common: {
+								name: "ZH-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.ZH-Sensor`,`${params.value / 10}`, true);
+						//console.log(`ZH Sensor: ${params.value / 10}`);
+						break;
+					case 194:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.WW-Sensor`, {
+							type: "state",
+							common: {
+								name: "WW-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.WW-Sensor`,`${params.value / 10}`, true);	
+						//console.log(`WW Sensor: ${params.value / 10}`);
+						break;
+					case 795:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Aussen-Sensor`, {
+							type: "state",
+							common: {
+								name: "Aussen-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Aussen-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Aussen Sensor: ${params.value / 10}`);
+						break;
+					case 1040:
+						const w_Puf_u_Sensor = params.value / 10;
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Puff_u-Sensor`, {
+							type: "state",
+							common: {
+								name: "Puff_u-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Puf_u: ${w_Puf_u_Sensor}`);
+						break;
+					case 196:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Kachelofen-Sensor`, {
+							type: "state",
+							common: {
+								name: "Kachelofen-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Kachelofen: ${params.value / 10}`);
+						break;
+					case 197:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Brenner-Sensor`, {
+							type: "state",
+							common: {
+								name: "Brenner-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Brenner-Sensor`,`${params.value / 10}`, true);
+						console.log(`Brenner: ${params.value / 10}`);
+						break;
+					case 1288:
+						const w_Puf_o_Sensor = params.value / 10;
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Puff_o-Sensor`, {
+							type: "state",
+							common: {
+								name: "Puff_o-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Puf_o: ${w_Puf_o_Sensor}`);
+						break;
+					case 1289:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Solar-Sensor`, {
+							type: "state",
+							common: {
+								name: "Solar-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Solar-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Solar Sensor: ${params.value / 10}`);
+						break;
+					case 221:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.HK-FB-Sensor`, {
+							type: "state",
+							common: {
+								name: "HK-FB-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Heizkreis Fussboden: ${params.value / 10}`);
+						break;
+					case 222:
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.HK-HK-Sensor`, {
+							type: "state",
+							common: {
+								name: "HK-HK-Sensor",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,`${params.value / 10}`, true);
+						//console.log(`Heizkreis HK: ${params.value / 10}`);
+						break;
+				}
+			}
+		}
+
 		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-		this.subscribeStates("testVariable");
+		// this.subscribeStates("testVariable");
+
 		// You can also add a subscription for multiple states. The following line watches all states starting with "lights."
 		// this.subscribeStates("lights.*");
 		// Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
@@ -68,21 +311,21 @@ class TechEmodulI3 extends utils.Adapter {
 			you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
 		*/
 		// the variable testVariable is set to true as command (ack=false)
-		await this.setStateAsync("testVariable", true);
+		//await this.setStateAsync("testVariable", true);
 
 		// same thing, but the value is flagged "ack"
 		// ack should be always set to true if the value is received from or acknowledged from the target system
-		await this.setStateAsync("testVariable", { val: true, ack: true });
+		//await this.setStateAsync("testVariable", { val: true, ack: true });
 
 		// same thing, but the state is deleted after 30s (getState will return null afterwards)
-		await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
+		//await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
 
 		// examples for the checkPassword/checkGroup functions
-		let result = await this.checkPasswordAsync("admin", "iobroker");
-		this.log.info("check user admin pw iobroker: " + result);
+		//let result = await this.checkPasswordAsync("admin", "iobroker");
+		//this.log.info("check user admin pw iobroker: " + result);
 
-		result = await this.checkGroupAsync("admin", "admin");
-		this.log.info("check group user admin group admin: " + result);
+		//result = await this.checkGroupAsync("admin", "admin");
+		//this.log.info("check group user admin group admin: " + result);
 	}
 
 	/**

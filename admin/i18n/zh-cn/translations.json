@@ -1,5 +1,7 @@
 {
-	"tech-emodul-i-3 adapter settings": "tech-emodul-i-3的适配器设置",
-	"User": "User",
-	"Password": "Password"
+    "tech-emodul-i-3 adapter settings": "tech-emodul-i-3的适配器设置",
+    "User": "User",
+    "Password": "Password",
+    "API-URL": "api url",
+    "Intervall": "间隔"
 }
