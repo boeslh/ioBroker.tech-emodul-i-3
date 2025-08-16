@@ -93,7 +93,7 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 	### **WORK IN PROGRESS**
 -->
 
-## **WORK IN PROGRESS**
+### **WORK IN PROGRESS**
 
 ### 0.1.0 (2025-08-16)
 * (Hubert Boesl) first Realase that works. No i18n
