@@ -1,97 +1,110 @@
 {
-	"common": {
-		"name": "tech-emodul-i-3",
-		"version": "0.1.0",
-		"news": {
-			"0.1.0": {
-				"en": "initial release",
-				"de": "Erstveröffentlichung",
-				"ru": "Начальная версия",
-				"pt": "lançamento inicial",
-				"nl": "Eerste uitgave",
-				"fr": "Première version",
-				"it": "Versione iniziale",
-				"es": "Versión inicial",
-				"pl": "Pierwsze wydanie",
-				"uk": "Початкова версія",
-				"zh-cn": "首次出版"
-			}
-		},
-		"titleLang": {
-			"en": "emodul i-3 heating control",
-			"de": "emodul i-3 heating control",
-			"ru": "emodul i-3 heating control",
-			"pt": "emodul i-3 heating control",
-			"nl": "emodul i-3 heating control",
-			"fr": "emodul i-3 heating control",
-			"it": "emodul i-3 heating control",
-			"es": "emodul i-3 heating control",
-			"pl": "emodul i-3 heating control",
-			"uk": "emodul i-3 heating control",
-			"zh-cn": "emodul i-3 heating control"
-		},
-		"desc": {
-			"en": "Connect to webservice emodul.eu to read an write controler parameter",
-			"de": "Connect to webservice emodul.eu to read an write controler parameter",
-			"ru": "Connect to webservice emodul.eu to read an write controler parameter",
-			"pt": "Connect to webservice emodul.eu to read an write controler parameter",
-			"nl": "Connect to webservice emodul.eu to read an write controler parameter",
-			"fr": "Connect to webservice emodul.eu to read an write controler parameter",
-			"it": "Connect to webservice emodul.eu to read an write controler parameter",
-			"es": "Connect to webservice emodul.eu to read an write controler parameter",
-			"pl": "Connect to webservice emodul.eu to read an write controler parameter",
-			"uk": "Connect to webservice emodul.eu to read an write controler parameter",
-			"zh-cn": "Connect to webservice emodul.eu to read an write controler parameter"
-		},
-		"authors": [
-			"Hubert Boesl <hubert@boesls.de>"
-		],
-		"keywords": [
-			"emodul i-3 heating"
-		],
-		"licenseInformation": {
-			"type": "free",
-			"license": "MIT"
-		},
-		"platform": "Javascript/Node.js",
-		"icon": "tech-emodul-i-3.png",
-		"enabled": true,
-		"extIcon": "https://raw.githubusercontent.com/boeslh/ioBroker.tech-emodul-i-3/main/admin/tech-emodul-i-3.png",
-		"readme": "https://github.com/boeslh/ioBroker.tech-emodul-i-3/blob/main/README.md",
-		"loglevel": "info",
-		"tier": 3,
-		"mode": "daemon",
-		"type": "climate-control",
-		"compact": true,
-		"connectionType": "cloud",
-		"dataSource": "poll",
-		"adminUI": {
-			"config": "json"
-		},
-		"supportCustoms": false,
-		"dependencies": [
-			{
-				"js-controller": ">=6.0.11"
-			}
-		],
-		"globalDependencies": [
-			{
-				"admin": ">=7.0.0"
-			}
-		]
-	},
-	"native": {
-		"APIURL": "https://emodul.eu/api/v1",
-		"Intervall": 300,
-		"User": "",
-		"Password": ""
-	},
-	"protectedNative": [
-		"Password"
-	],
-	"encryptedNative": [
-		"Password"
-	],
-	"objects": [],
-	"instanceObjects": []
+  "common": {
+    "name": "tech-emodul-i-3",
+    "version": "0.1.1",
+    "news": {
+      "0.1.1": {
+        "en": "",
+        "de": "",
+        "ru": "",
+        "pt": "",
+        "nl": "",
+        "fr": "",
+        "it": "",
+        "es": "",
+        "pl": "",
+        "uk": "",
+        "zh-cn": ""
+      },
+      "0.1.0": {
+        "en": "initial release",
+        "de": "Erstveröffentlichung",
+        "ru": "Начальная версия",
+        "pt": "lançamento inicial",
+        "nl": "Eerste uitgave",
+        "fr": "Première version",
+        "it": "Versione iniziale",
+        "es": "Versión inicial",
+        "pl": "Pierwsze wydanie",
+        "uk": "Початкова версія",
+        "zh-cn": "首次出版"
+      }
+    },
+    "titleLang": {
+      "en": "emodul i-3 heating control",
+      "de": "emodul i-3 heating control",
+      "ru": "emodul i-3 heating control",
+      "pt": "emodul i-3 heating control",
+      "nl": "emodul i-3 heating control",
+      "fr": "emodul i-3 heating control",
+      "it": "emodul i-3 heating control",
+      "es": "emodul i-3 heating control",
+      "pl": "emodul i-3 heating control",
+      "uk": "emodul i-3 heating control",
+      "zh-cn": "emodul i-3 heating control"
+    },
+    "desc": {
+      "en": "Connect to webservice emodul.eu to read an write controler parameter",
+      "de": "Connect to webservice emodul.eu to read an write controler parameter",
+      "ru": "Connect to webservice emodul.eu to read an write controler parameter",
+      "pt": "Connect to webservice emodul.eu to read an write controler parameter",
+      "nl": "Connect to webservice emodul.eu to read an write controler parameter",
+      "fr": "Connect to webservice emodul.eu to read an write controler parameter",
+      "it": "Connect to webservice emodul.eu to read an write controler parameter",
+      "es": "Connect to webservice emodul.eu to read an write controler parameter",
+      "pl": "Connect to webservice emodul.eu to read an write controler parameter",
+      "uk": "Connect to webservice emodul.eu to read an write controler parameter",
+      "zh-cn": "Connect to webservice emodul.eu to read an write controler parameter"
+    },
+    "authors": [
+      "Hubert Boesl <hubert@boesls.de>"
+    ],
+    "keywords": [
+      "emodul i-3 heating"
+    ],
+    "licenseInformation": {
+      "type": "free",
+      "license": "MIT"
+    },
+    "platform": "Javascript/Node.js",
+    "icon": "tech-emodul-i-3.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/boeslh/ioBroker.tech-emodul-i-3/main/admin/tech-emodul-i-3.png",
+    "readme": "https://github.com/boeslh/ioBroker.tech-emodul-i-3/blob/main/README.md",
+    "loglevel": "info",
+    "tier": 3,
+    "mode": "daemon",
+    "type": "climate-control",
+    "compact": true,
+    "connectionType": "cloud",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "supportCustoms": false,
+    "dependencies": [
+      {
+        "js-controller": ">=6.0.11"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=7.0.0"
+      }
+    ]
+  },
+  "native": {
+    "APIURL": "https://emodul.eu/api/v1",
+    "Intervall": 300,
+    "User": "",
+    "Password": ""
+  },
+  "protectedNative": [
+    "Password"
+  ],
+  "encryptedNative": [
+    "Password"
+  ],
+  "objects": [],
+  "instanceObjects": []
 }
