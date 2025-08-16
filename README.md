@@ -94,6 +94,9 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 -->
 
 ### **WORK IN PROGRESS**
+* (Hubert Boesl) first Realase that works. No i18n
+
+### **WORK IN PROGRESS**
 * (Hubert Boesl) initial release
 
 ## License

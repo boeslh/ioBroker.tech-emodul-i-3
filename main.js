@@ -60,12 +60,72 @@ class TechEmodulI3 extends utils.Adapter {
 	}
 
 
+	
+
+	async getAllData() {
+		// This method can be used to fetch data from the API or perform other operations.
+		const [userid, token] = await this.getAuthToken();
+		this.setStateAsync("UserID", { val: userid, ack: true });
+		const s_userid = userid.toString();
+
+		const modules = await this.getModules(userid, token);
+		const allData = {};
+        const allMenu = {};
+		//this.log.info("Get all Tiles " + userid );
+			
+        for (const module of modules) {
+            const modId = module.id;
+            const udid = module.udid;
+            const modName = module.name || modId;
+			this.log.info("Get all Tiles " + modName + " (ID: " + modId + ", UDID: " + udid + ")");
+			allData[modName] = await this.getModuleData(userid, token, udid);
+            allMenu[modName] = await this.getMenuData(userid, token, udid);
+			const tiles = allData[`${modName}`]["tiles"];
+			for (const tile of tiles) {
+				const params = tile.params || {};
+				switch (params.txtId) {
+					case 192:
+						this.setState(`${s_userid}.${udid}.ZH-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 194:
+						this.setState(`${s_userid}.${udid}.WW-Sensor`,parseFloat(`${params.value / 10}`), true);	
+						break;
+					case 795:
+						this.setState(`${s_userid}.${udid}.Aussen-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 1040:
+						this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 196:
+						this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 197:
+						this.setState(`${s_userid}.${udid}.Brenner-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 1288:
+						this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 1289:
+						this.setState(`${s_userid}.${udid}.Solar-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 221:
+						this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+					case 222:
+						this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,parseFloat(`${params.value / 10}`), true);
+						break;
+				}
+			}
+		}
+
+	}
+	
 	/**
 	 * Is called when databases are connected and adapter received configuration.
 	 */
 	async onReady() {
 		// Initialize your adapter here
-
+		let s_Auto_Sommer_Temp = "";
 		// The adapters config (in the instance object everything under the attribute "native") is accessible via
 		// this.config:
 		this.log.info("config User: " + this.config.User);
@@ -130,15 +190,41 @@ class TechEmodulI3 extends utils.Adapter {
 					type: "string",
 					role: "value",
 					read: true,
-					write: true
+					write: false
 				},
 				native: {},
 			});
 			await this.setState(`${s_userid}.${udid}.Name`,`${modName}`, true);
 			allData[modName] = await this.getModuleData(userid, token, udid);
-            // allMenu[modName] = await getMenuData(userid, token, udid);
+            allMenu[modName] = await this.getMenuData(userid, token, udid);
         
 			const tiles = allData[`${modName}`]["tiles"];
+			const elements = allMenu[`${modName}`]["data"]["elements"];
+
+			let m_Auto_Sommer;
+			for (const element of elements) {
+				if (element.txtId === 3261) {
+					const params = element.params || {};
+					m_Auto_Sommer = params.value;
+					console.log(`Auto Sommer Temp: ${m_Auto_Sommer}`);
+					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Auto_Sommer_Temp`, {
+						type: "state",
+						common: {
+							name: "Auto_Sommer_Temp",
+							type: "number",
+							role: "value",
+							read: true,
+							write: true
+						},
+						native: {},
+					});
+					await this.setState(`${s_userid}.${udid}.Auto_Sommer_Temp`,parseInt(`${m_Auto_Sommer}`), true);
+					s_Auto_Sommer_Temp = `${s_userid}.${udid}.Auto_Sommer_Temp`;
+					break;
+				}
+			}
+
+			
 			for (const tile of tiles) {
 				const params = tile.params || {};
 				switch (params.txtId) {
@@ -154,7 +240,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.ZH-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.ZH-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`ZH Sensor: ${params.value / 10}`);
 						break;
 					case 194:
@@ -169,7 +255,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.WW-Sensor`,`${params.value / 10}`, true);	
+						await this.setState(`${s_userid}.${udid}.WW-Sensor`,parseFloat(`${params.value / 10}`), true);	
 						//console.log(`WW Sensor: ${params.value / 10}`);
 						break;
 					case 795:
@@ -184,7 +270,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Aussen-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.Aussen-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Aussen Sensor: ${params.value / 10}`);
 						break;
 					case 1040:
@@ -200,7 +286,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Puf_u: ${w_Puf_u_Sensor}`);
 						break;
 					case 196:
@@ -215,7 +301,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Kachelofen: ${params.value / 10}`);
 						break;
 					case 197:
@@ -230,8 +316,8 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Brenner-Sensor`,`${params.value / 10}`, true);
-						console.log(`Brenner: ${params.value / 10}`);
+						await this.setState(`${s_userid}.${udid}.Brenner-Sensor`,parseFloat(`${params.value / 10}`), true);
+						//console.log(`Brenner: ${params.value / 10}`);
 						break;
 					case 1288:
 						const w_Puf_o_Sensor = params.value / 10;
@@ -246,7 +332,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Puf_o: ${w_Puf_o_Sensor}`);
 						break;
 					case 1289:
@@ -261,7 +347,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Solar-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.Solar-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Solar Sensor: ${params.value / 10}`);
 						break;
 					case 221:
@@ -276,7 +362,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Heizkreis Fussboden: ${params.value / 10}`);
 						break;
 					case 222:
@@ -291,13 +377,19 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,`${params.value / 10}`, true);
+						await this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,parseFloat(`${params.value / 10}`), true);
 						//console.log(`Heizkreis HK: ${params.value / 10}`);
 						break;
 				}
 			}
 		}
-
+		//this.log.info("Intervall starten " + this.config.Intervall);
+		setInterval(() => { this.getAllData()}, this.config.Intervall * 1000);
+		//this.subscribeStates("601931793.bebbe8daf62b8b2bd72b4c6c6a4ec6a2.Auto_Sommer_Temp");
+		//this.log.info(`SubscribeStates: ${s_Auto_Sommer_Temp}`);
+		this.subscribeStates(`${s_Auto_Sommer_Temp}`); 
+		
+		// This is a placeholder. Replace with the actual state path if needed.
 		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
 		// this.subscribeStates("testVariable");
 
@@ -346,6 +438,45 @@ class TechEmodulI3 extends utils.Adapter {
 		}
 	}
 
+	async setModuleData(userid, token, udid, ido, value) {
+		/** Setzt Daten für ein spezifisches Modul. */
+		const headers = { "Authorization": `Bearer ${token}` };
+		const resp = await axios.post(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU/ido/${ido}`, { value: value }, { headers: headers });
+		this.log.info(`Set Module Data: ${JSON.stringify(resp.data)}`);
+		return resp.data;
+	}
+
+	async onStateChange(id, state) {
+		//console.log(`State changed: ${id} - New value: ${state ? state.val : "undefined"}`);
+		if (id.includes("Auto_Sommer_Temp")) {
+			const newValue = state ? state.val : null;
+			if (newValue !== null) {
+				this.log.info(`Auto Sommer Temp changed to: ${newValue}`);
+				const [userid, token] = await this.getAuthToken();
+				const s_userid = userid.toString();
+				const modules = await this.getModules(userid, token);
+				const allData = {};
+				const allMenu = {};
+				let udid = "";
+				for (const module of modules) {
+					const modId = module.id;
+					udid = module.udid;
+				}
+				//const headers1 = { "Authorization": `Bearer ${token}` };
+    			//const resp = await axios.post(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU/ido/4622`, { value: `${newValue}` }, { headers: `${headers1}`});
+				const status = await this.setModuleData(userid, token, udid, 4622, newValue);
+			} else {
+				this.log.warn("Auto Sommer Temp state was deleted or set to null.");
+			}
+		}
+
+	}
+	//onStateChange(""`${s_userid}.${udid}.Auto_Sommer_Temp`", (id, state) => {
+	//	const newValue = state.val;
+	//	//this.log.info(`Auto Sommer Temp changed to: ${newValue}`);
+	//	console.log(`Auto Sommer Temp changed to: ${newValue}`);	
+	//});
+
 	// If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
 	// You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
 	// /**
@@ -368,15 +499,15 @@ class TechEmodulI3 extends utils.Adapter {
 	 * @param {string} id
 	 * @param {ioBroker.State | null | undefined} state
 	 */
-	onStateChange(id, state) {
-		if (state) {
-			// The state was changed
-			this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-		} else {
-			// The state was deleted
-			this.log.info(`state ${id} deleted`);
-		}
-	}
+	//onStateChange(id, state) {
+	//	if (state) {
+	//		// The state was changed
+	//		this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
+	//	} else {
+	//		// The state was deleted
+	//		this.log.info(`state ${id} deleted`);
+	//	}
+	//}
 
 	// If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
 	// /**
@@ -396,6 +527,7 @@ class TechEmodulI3 extends utils.Adapter {
 	// 	}
 	// }
 
+	
 }
 
 if (require.main !== module) {
