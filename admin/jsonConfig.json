@@ -6,16 +6,31 @@
 			"type": "text",
 			"label": "API-URL",
 			"default": "https://emodul.eu/api/v1",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"newLine": true
 		},
 		"User": {
 			"type": "text",
 			"label": "User",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"newLine": true
 		},
 		"Password": {
 			"type": "text",
 			"label": "Password",
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"newLine": true
 		},
 		"Intervall": {
@@ -24,6 +39,11 @@
 			"min": 60,
 			"max": 3600,
 			"default": 300,
+			"xs": 12,
+			"sm": 12,
+			"md": 6,
+			"lg": 4,
+			"xl": 4,
 			"newLine": true
 		}
 	}
