@@ -2,6 +2,12 @@
 	"i18n": true,
 	"type": "panel",
 	"items": {
+		"API-URL": {
+			"type": "text",
+			"label": "API-URL",
+			"default": "https://emodul.eu/api/v1",
+			"newLine": true
+		},
 		"User": {
 			"type": "text",
 			"label": "User",
@@ -10,6 +16,14 @@
 		"Password": {
 			"type": "text",
 			"label": "Password",
+			"newLine": true
+		},
+		"Intervall": {
+			"type": "number",
+			"label": "Intervall (in s)",
+			"min": 60,
+			"max": 3600,
+			"default": 300,
 			"newLine": true
 		}
 	}
