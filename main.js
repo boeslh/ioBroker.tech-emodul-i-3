@@ -9,6 +9,9 @@
 const utils = require("@iobroker/adapter-core");
 const axios = require('axios');
 
+let i18nList = {};
+let conf_lang = "en";
+
 // Load your modules here, e.g.:
 // const fs = require("fs");
 
@@ -59,7 +62,33 @@ class TechEmodulI3 extends utils.Adapter {
     	return resp.data;
 	}
 
+	async geti18nList(userid, token, lang) {
+    	/** Liest alle Menüdaten eines spezifischen Moduls aus. */
+    	const headers = { "Authorization": `Bearer ${token}` };
+    	const resp = await axios.get(`${this.config.APIURL}/i18n/${lang}`, { headers: headers });
+    	return resp.data;
+	}
 
+	async getLanguage() {
+    try {
+        const obj = await this.getForeignObjectAsync('system.config');
+        
+        // 1. Prüfe, ob das Objekt existiert und die notwendigen Eigenschaften hat.
+        if (obj && obj.common && obj.common.language) {
+            const language = obj.common.language;
+            this.log.info(`Die konfigurierte Sprache ist: ${language}`);
+            return language;
+        } else {
+            // 2. Fallback, wenn das Objekt unvollständig ist.
+            this.log.warn("Sprache konnte nicht aus 'system.config' ermittelt werden. Verwende Standard 'en'.");
+            return 'en';
+        }
+    } catch (e) {
+        // 3. Fehlerbehandlung, falls der Aufruf fehlschlägt.
+        this.log.error(`Fehler beim Abrufen der Systemkonfiguration: ${e.message}`);
+        return 'en'; // Setze auch hier einen Standardwert
+    }
+}
 	
 
 	async getAllData() {
@@ -83,37 +112,18 @@ class TechEmodulI3 extends utils.Adapter {
 			const tiles = allData[`${modName}`]["tiles"];
 			for (const tile of tiles) {
 				const params = tile.params || {};
-				switch (params.txtId) {
-					case 192:
-						this.setState(`${s_userid}.${udid}.ZH-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 194:
-						this.setState(`${s_userid}.${udid}.WW-Sensor`,parseFloat(`${params.value / 10}`), true);	
-						break;
-					case 795:
-						this.setState(`${s_userid}.${udid}.Aussen-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 1040:
-						this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 196:
-						this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 197:
-						this.setState(`${s_userid}.${udid}.Brenner-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 1288:
-						this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 1289:
-						this.setState(`${s_userid}.${udid}.Solar-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 221:
-						this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
-					case 222:
-						this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,parseFloat(`${params.value / 10}`), true);
-						break;
+				switch (tile.id) {
+					case 2050:
+					case 2051:
+					case 2052:
+					case 2053:
+					case 2054:
+					case 2055:
+					case 2056:
+					case 2057:
+					case 2058:
+					case 2059:
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
 				}
 			}
 		}
@@ -158,7 +168,15 @@ class TechEmodulI3 extends utils.Adapter {
 		await this.setStateAsync("UserID", { val: userid, ack: true });
 		this.log.info("UserID: " + userid);
 		const s_userid = userid.toString();
-
+		const conf_obj = await this.getForeignObjectsAsync('system.config');
+		//if (conf_obj && conf_obj.common) {
+			conf_lang = await this.getLanguage();
+			this.log.info(`System language: ${conf_lang}`);
+		//}
+		i18nList = await this.geti18nList(userid, token, conf_lang );
+		const i18nItem = i18nList["data"]["4622"];
+		this.log.info(`i18n Key: ${i18nItem} (${conf_lang})`);
+		
 		await this.setObjectNotExistsAsync(s_userid, {
 			type: "folder",
 			common: {
@@ -176,10 +194,25 @@ class TechEmodulI3 extends utils.Adapter {
             const udid = module.udid;
             const modName = module.name || modId;
 			this.log.info(`Module: ${modName} (ID: ${modId}, UDID: ${udid})`);
+			// generate Folder for each Device
             await this.setObjectNotExistsAsync(`${s_userid}.${udid}`, {
 				type: "folder",
 				common: {
 					name: udid
+				},
+				native: {},
+			});
+			await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles`, {
+				type: "folder",
+				common: {
+					name: "Tiles"
+				},
+				native: {},
+			});
+			await this.setObjectNotExistsAsync(`${s_userid}.${udid}.MU`, {
+				type: "folder",
+				common: {
+					name: "User Menue"
 				},
 				native: {},
 			});
@@ -201,16 +234,14 @@ class TechEmodulI3 extends utils.Adapter {
 			const tiles = allData[`${modName}`]["tiles"];
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 
-			let m_Auto_Sommer;
 			for (const element of elements) {
-				if (element.txtId === 3261) {
+				if (element.id == 4622) {
 					const params = element.params || {};
-					m_Auto_Sommer = params.value;
-					console.log(`Auto Sommer Temp: ${m_Auto_Sommer}`);
-					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Auto_Sommer_Temp`, {
+					const ptxt= i18nList["data"][`${element.txtId}`]
+					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.MU.${element.id}`, {
 						type: "state",
 						common: {
-							name: "Auto_Sommer_Temp",
+							name: `${ptxt}`,
 							type: "number",
 							role: "value",
 							read: true,
@@ -218,8 +249,8 @@ class TechEmodulI3 extends utils.Adapter {
 						},
 						native: {},
 					});
-					await this.setState(`${s_userid}.${udid}.Auto_Sommer_Temp`,parseInt(`${m_Auto_Sommer}`), true);
-					s_Auto_Sommer_Temp = `${s_userid}.${udid}.Auto_Sommer_Temp`;
+					await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
+					s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
 					break;
 				}
 			}
@@ -227,12 +258,24 @@ class TechEmodulI3 extends utils.Adapter {
 			
 			for (const tile of tiles) {
 				const params = tile.params || {};
-				switch (params.txtId) {
-					case 192:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.ZH-Sensor`, {
+				switch (tile.id) {
+					case 2050:
+					case 2051:
+					case 2052:
+					case 2053:
+					case 2054:
+					case 2055:
+					case 2056:
+					case 2057:
+					case 2058:
+					case 2059:
+						const ptxt= i18nList["data"][`${params.txtId}`]
+						const pval =params.value / 10;
+						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
 							type: "state",
 							common: {
-								name: "ZH-Sensor",
+								name: `${ptxt}`,
 								type: "number",
 								role: "value",
 								read: true,
@@ -240,148 +283,11 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.ZH-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`ZH Sensor: ${params.value / 10}`);
-						break;
-					case 194:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.WW-Sensor`, {
-							type: "state",
-							common: {
-								name: "WW-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.WW-Sensor`,parseFloat(`${params.value / 10}`), true);	
-						//console.log(`WW Sensor: ${params.value / 10}`);
-						break;
-					case 795:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Aussen-Sensor`, {
-							type: "state",
-							common: {
-								name: "Aussen-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Aussen-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Aussen Sensor: ${params.value / 10}`);
-						break;
-					case 1040:
-						const w_Puf_u_Sensor = params.value / 10;
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Puff_u-Sensor`, {
-							type: "state",
-							common: {
-								name: "Puff_u-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Puff_u-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Puf_u: ${w_Puf_u_Sensor}`);
-						break;
-					case 196:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Kachelofen-Sensor`, {
-							type: "state",
-							common: {
-								name: "Kachelofen-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Kachelofen-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Kachelofen: ${params.value / 10}`);
-						break;
-					case 197:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Brenner-Sensor`, {
-							type: "state",
-							common: {
-								name: "Brenner-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Brenner-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Brenner: ${params.value / 10}`);
-						break;
-					case 1288:
-						const w_Puf_o_Sensor = params.value / 10;
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Puff_o-Sensor`, {
-							type: "state",
-							common: {
-								name: "Puff_o-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Puff_o-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Puf_o: ${w_Puf_o_Sensor}`);
-						break;
-					case 1289:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Solar-Sensor`, {
-							type: "state",
-							common: {
-								name: "Solar-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.Solar-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Solar Sensor: ${params.value / 10}`);
-						break;
-					case 221:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.HK-FB-Sensor`, {
-							type: "state",
-							common: {
-								name: "HK-FB-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.HK-FB-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Heizkreis Fussboden: ${params.value / 10}`);
-						break;
-					case 222:
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.HK-HK-Sensor`, {
-							type: "state",
-							common: {
-								name: "HK-HK-Sensor",
-								type: "number",
-								role: "value",
-								read: true,
-								write: false
-							},
-						native: {},
-						});
-						await this.setState(`${s_userid}.${udid}.HK-HK-Sensor`,parseFloat(`${params.value / 10}`), true);
-						//console.log(`Heizkreis HK: ${params.value / 10}`);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
 						break;
 				}
 			}
+			
 		}
 		//this.log.info("Intervall starten " + this.config.Intervall);
 		setInterval(() => { this.getAllData()}, this.config.Intervall * 1000);
@@ -448,7 +354,7 @@ class TechEmodulI3 extends utils.Adapter {
 
 	async onStateChange(id, state) {
 		//console.log(`State changed: ${id} - New value: ${state ? state.val : "undefined"}`);
-		if (id.includes("Auto_Sommer_Temp")) {
+		if (id.includes("4622")) {
 			const newValue = state ? state.val : null;
 			if (newValue !== null) {
 				this.log.info(`Auto Sommer Temp changed to: ${newValue}`);
