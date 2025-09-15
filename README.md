@@ -92,8 +92,11 @@ Please refer to the [`dev-server` documentation](https://github.com/ioBroker/dev
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
-### 0.1.1 (2025-08-16)
+### 0.2.1 (2025-09-16)
 * (Hubert Boesl)
+
+### 0.2.0 (2025-09-15)
+* (Hubert Boesl) Working with Object Type. All Objects of same Type are processed
 
 ### 0.1.0 (2025-08-16)
 * (Hubert Boesl) first Realase that works. No i18n

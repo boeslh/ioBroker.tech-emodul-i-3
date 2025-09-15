@@ -96,11 +96,10 @@ class TechEmodulI3 extends utils.Adapter {
 		const [userid, token] = await this.getAuthToken();
 		this.setStateAsync("UserID", { val: userid, ack: true });
 		const s_userid = userid.toString();
-
-		const modules = await this.getModules(userid, token);
+        const modules = await this.getModules(userid, token);
 		const allData = {};
         const allMenu = {};
-		//this.log.info("Get all Tiles " + userid );
+		this.log.info("Get all Tiles " + userid );
 			
         for (const module of modules) {
             const modId = module.id;
@@ -112,18 +111,30 @@ class TechEmodulI3 extends utils.Adapter {
 			const tiles = allData[`${modName}`]["tiles"];
 			for (const tile of tiles) {
 				const params = tile.params || {};
-				switch (tile.id) {
-					case 2050:
-					case 2051:
-					case 2052:
-					case 2053:
-					case 2054:
-					case 2055:
-					case 2056:
-					case 2057:
-					case 2058:
-					case 2059:
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
+				switch (tile.type) {
+					case 1:
+						console.log(`Tile: ID: ${tile.id}, txtId: ${tile.txtId}, Value: ${params.value} ` );
+					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
+					    break;
+					case 6:
+						console.log(`Tile: ID: ${tile.id}, txtId: ${tile.txtId}, Status: ${params.statusId} ` );
+					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-state`,parseFloat(`${params.statusId}`), true);	
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${params.widget1.value}`), true);
+					    break;
+				}
+			}
+			const elements = allMenu[`${modName}`]["data"]["elements"];
+			for (const element of elements) {
+				const params = element.params || {};
+				switch (element.type) {
+					case 1:
+						console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} ` );
+					    const mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
+						if ( mstate?.val !== params.value) {
+						    console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} changed - Write` );
+							await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
+						}
+					    break;
 				}
 			}
 		}
@@ -235,9 +246,10 @@ class TechEmodulI3 extends utils.Adapter {
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 
 			for (const element of elements) {
-				if (element.id == 4622) {
+				if (element.type == 1) {
 					const params = element.params || {};
 					const ptxt= i18nList["data"][`${element.txtId}`]
+					console.log(`Elemet: ID: ${element.id}, txtId: ${element.txtId}, Text: ${ptxt}, Value: ${params.value} ` );
 					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.MU.${element.id}`, {
 						type: "state",
 						common: {
@@ -250,27 +262,23 @@ class TechEmodulI3 extends utils.Adapter {
 						native: {},
 					});
 					await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
-					s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
-					break;
+					if (element.id == 4622) {
+					    s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
+					}
 				}
 			}
 
 			
 			for (const tile of tiles) {
+				let widget1= {};
+				let widget2= {};
+				let pval=0;
 				const params = tile.params || {};
-				switch (tile.id) {
-					case 2050:
-					case 2051:
-					case 2052:
-					case 2053:
-					case 2054:
-					case 2055:
-					case 2056:
-					case 2057:
-					case 2058:
-					case 2059:
-						const ptxt= i18nList["data"][`${params.txtId}`]
-						const pval =params.value / 10;
+				let ptxt= i18nList["data"][`${params.txtId}`]
+				switch (tile.type) {
+					case 1:
+						ptxt= i18nList["data"][`${params.txtId}`]
+						pval = params.value / 10;
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
 							type: "state",
@@ -285,6 +293,37 @@ class TechEmodulI3 extends utils.Adapter {
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
 						break;
+					case 6:
+						widget1= params.widget1 || {};
+						pval =widget1.value;
+						ptxt= i18nList["data"][`${widget1.txtId}`];
+						console.log(`Tiles: ID: ${tile.id}, txtId: ${widget1.txtId}, Text: ${ptxt}, Value: ${pval} ` );
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}-state`, {
+							type: "state",
+							common: {
+								name: `${ptxt}`,
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-state`,params.statusId, true);
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`, {
+							type: "state",
+							common: {
+								name: `${ptxt}`,
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${pval}`), true);
+						break;
+					
 				}
 			}
 			

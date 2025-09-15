@@ -1,21 +1,8 @@
 {
   "common": {
     "name": "tech-emodul-i-3",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "news": {
-      "0.1.1": {
-        "en": "",
-        "de": "",
-        "ru": "",
-        "pt": "",
-        "nl": "",
-        "fr": "",
-        "it": "",
-        "es": "",
-        "pl": "",
-        "uk": "",
-        "zh-cn": ""
-      },
       "0.1.0": {
         "en": "initial release",
         "de": "Erstveröffentlichung",
