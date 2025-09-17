@@ -107,28 +107,29 @@ class TechEmodulI3 extends utils.Adapter {
             const modName = module.name || modId;
 			this.log.info("Get all Tiles " + modName + " (ID: " + modId + ", UDID: " + udid + ")");
 			allData[modName] = await this.getModuleData(userid, token, udid);
-            allMenu[modName] = await this.getMenuData(userid, token, udid);
-			const tiles = allData[`${modName}`]["tiles"];
+            const tiles = allData[`${modName}`]["tiles"];
 			for (const tile of tiles) {
 				const params = tile.params || {};
 				switch (tile.type) {
 					case 1:
-						console.log(`Tile: ID: ${tile.id}, txtId: ${tile.txtId}, Value: ${params.value} ` );
+						console.log(`Tile: ID: ${tile.id}, Value: ${params.value} ` );
 					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
 					    break;
 					case 6:
-						console.log(`Tile: ID: ${tile.id}, txtId: ${tile.txtId}, Status: ${params.statusId} ` );
-					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-state`,parseFloat(`${params.statusId}`), true);	
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${params.widget1.value}`), true);
-					    break;
+						console.log(`Tile: ID: ${tile.id}, Status: ${params.statusId} ` );
+					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,parseFloat(`${params.statusId}`), true);	
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${params.widget1.value}`), true);
+					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${params.widget2.value}`), true);
+						break;
 				}
 			}
+			allMenu[modName] = await this.getMenuData(userid, token, udid);
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 			for (const element of elements) {
 				const params = element.params || {};
 				switch (element.type) {
 					case 1:
-						console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} ` );
+						console.log(`Element: ID: ${element.id}, Value: ${params.value} ` );
 					    const mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
 						if ( mstate?.val !== params.value) {
 						    console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} changed - Write` );
@@ -147,6 +148,8 @@ class TechEmodulI3 extends utils.Adapter {
 	async onReady() {
 		// Initialize your adapter here
 		let s_Auto_Sommer_Temp = "";
+		let grouping_id = 0;
+		let grouping_name = "";
 		// The adapters config (in the instance object everything under the attribute "native") is accessible via
 		// this.config:
 		this.log.info("config User: " + this.config.User);
@@ -246,10 +249,21 @@ class TechEmodulI3 extends utils.Adapter {
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 
 			for (const element of elements) {
+				if (element.type == 0) {
+					// Grouping Menu Element
+					grouping_id = element.id;
+					grouping_name = i18nList["data"][`${element.txtId}`];
+				}
 				if (element.type == 1) {
 					const params = element.params || {};
-					const ptxt= i18nList["data"][`${element.txtId}`]
-					console.log(`Elemet: ID: ${element.id}, txtId: ${element.txtId}, Text: ${ptxt}, Value: ${params.value} ` );
+					let ptxt= "";
+					//const ptxt= i18nList["data"][`${element.txtId}`]
+					if (element.parentId == grouping_id) {
+						ptxt= `${grouping_name}/${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`
+					} else {
+					    ptxt= `${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`
+					}
+				    console.log(`Elemet: ID: ${element.id}, txtId: ${element.txtId}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${params.value} ` );
 					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.MU.${element.id}`, {
 						type: "state",
 						common: {
@@ -274,7 +288,7 @@ class TechEmodulI3 extends utils.Adapter {
 				let widget2= {};
 				let pval=0;
 				const params = tile.params || {};
-				let ptxt= i18nList["data"][`${params.txtId}`]
+				let ptxt= `${i18nList["data"][`${params.txtId}`]}/${i18nList["data"][`${tile.txtId}`]}`
 				switch (tile.type) {
 					case 1:
 						ptxt= i18nList["data"][`${params.txtId}`]
@@ -296,9 +310,29 @@ class TechEmodulI3 extends utils.Adapter {
 					case 6:
 						widget1= params.widget1 || {};
 						pval =widget1.value;
-						ptxt= i18nList["data"][`${widget1.txtId}`];
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${widget1.txtId}, Text: ${ptxt}, Value: ${pval} ` );
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}-state`, {
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
+				            type: "folder",
+				            common: {
+					        name: `${tile.id}`
+				            },
+				            native: {},
+			                });
+			
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.state`, {
+							type: "state",
+							common: {
+								name: "Status",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,params.statusId, true);
+						ptxt= i18nList["data"][`${widget1.txtId}`];
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`, {
 							type: "state",
 							common: {
 								name: `${ptxt}`,
@@ -309,8 +343,9 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-state`,params.statusId, true);
-						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`, {
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${widget1.value}`), true);
+						ptxt= i18nList["data"][`${widget2.txtId}`];
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`, {
 							type: "state",
 							common: {
 								name: `${ptxt}`,
@@ -321,7 +356,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${pval}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${widget2.value}`), true);
 						break;
 					
 				}
