@@ -21,8 +21,12 @@ Install the Adapter, Configure Username and Password
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+* (Hubert Boesl) - Bugfixing - check-and-lint
+
 ### 1.0.3 (2025-09-17)
-* (Hubert Boesl)
+* (Hubert Boesl) - Bugfixing - check-and-lint
 
 ### 1.0.0 (2025-09-17)
 * (Hubert Boesl) - Just to Create a Major Release
