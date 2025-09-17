@@ -22,6 +22,7 @@ Install the Adapter, Configure Username and Password
 	### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+* (Hubert Boesl) 
 
 ### 0.2.1 (2025-09-16)
 * (Hubert Boesl) Integrate most common Object Types. Organice Values to Folders
