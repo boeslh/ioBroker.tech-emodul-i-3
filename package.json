@@ -1,6 +1,6 @@
 {
   "name": "iobroker.tech-emodul-i-3",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Connect to webservice emodul.eu to read an write controler parameter",
   "author": {
     "name": "Hubert Boesl",
