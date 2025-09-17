@@ -121,8 +121,15 @@ class TechEmodulI3 extends utils.Adapter {
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${params.widget1.value}`), true);
 					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${params.widget2.value}`), true);
 						break;
+					case 23:
+						console.log(`Tile: ID: ${tile.id}, Status: ${params.currentTemp / 10} ` );
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
+                        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
+						break;
 				}
 			}
+
 			allMenu[modName] = await this.getMenuData(userid, token, udid);
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 			for (const element of elements) {
@@ -280,6 +287,7 @@ class TechEmodulI3 extends utils.Adapter {
 					    s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
 					}
 				}
+				
 			}
 
 			
@@ -343,7 +351,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}-widget1`,parseFloat(`${widget1.value}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${widget1.value}`), true);
 						ptxt= i18nList["data"][`${widget2.txtId}`];
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`, {
 							type: "state",
@@ -358,7 +366,53 @@ class TechEmodulI3 extends utils.Adapter {
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${widget2.value}`), true);
 						break;
-					
+				    case 23:
+						ptxt= i18nList["data"][`${params.txtId}`]
+						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
+				            type: "folder",
+				            common: {
+					        name: `${ptxt}`
+				            },
+				            native: {},
+			                });
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`, {
+							type: "state",
+							common: {
+								name: "currentTemp",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.setTemp`, {
+							type: "state",
+							common: {
+								name: "setTemp",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
+						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.valvePump`, {
+							type: "state",
+							common: {
+								name: "valvePump",
+								type: "number",
+								role: "value",
+								read: true,
+								write: false
+							},
+						native: {},
+						});
+				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
+						
 				}
 			}
 			
