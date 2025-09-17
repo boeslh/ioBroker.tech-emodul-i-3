@@ -3,6 +3,19 @@
     "name": "tech-emodul-i-3",
     "version": "0.2.1",
     "news": {
+      "0.2.1": {
+          "en": "First Version to Publish",
+          "de": "Erste Version zur Veröffentlichung.",
+          "ru": "Первая опубликованная версия",
+          "pt": "Primeira versão a ser publicada",
+          "nl": "Eerste versie om te publiceren.",
+          "fr": "Première version à publier",
+          "it": "Prima versione da pubblicare",
+          "es": "Primera versión para publicar",
+          "pl": "Pierwsza wersja do opublikowania",
+          "uk": "Перша версія для публікації",
+          "zh-cn": "首次发布版本"
+        },
       "0.1.0": {
         "en": "initial release",
         "de": "Erstveröffentlichung",
