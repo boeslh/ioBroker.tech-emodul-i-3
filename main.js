@@ -33,14 +33,14 @@ class TechEmodulI3 extends utils.Adapter {
 	}
 
 	async getAuthToken() {
-			/** Authentifiziert sich an der API und gibt ein Token zurück. */
-			const resp = await axios.post(`${this.config.APIURL}/authentication`, {
+		/** Authentifiziert sich an der API und gibt ein Token zurück. */
+		const resp = await axios.post(`${this.config.APIURL}/authentication`, {
 			username: this.config.User,
 			password: this.config.Password
 		});
 		return [resp.data.user_id, resp.data.token];
 	}
-	
+
 	async getModules(userid, token) {
 		/** Liest die Liste aller Module, auf die der Benutzer Zugriff hat. */
 		const headers = { "Authorization": `Bearer ${token}` };
@@ -70,26 +70,24 @@ class TechEmodulI3 extends utils.Adapter {
 	}
 
 	async getLanguage() {
-	try {
-		const obj = await this.getForeignObjectAsync('system.config');
-		
-		// 1. Prüfe, ob das Objekt existiert und die notwendigen Eigenschaften hat.
-		if (obj && obj.common && obj.common.language) {
-			const language = obj.common.language;
-			this.log.info(`Die konfigurierte Sprache ist: ${language}`);
-			return language;
-		} else {
-			// 2. Fallback, wenn das Objekt unvollständig ist.
-			this.log.warn("Sprache konnte nicht aus 'system.config' ermittelt werden. Verwende Standard 'en'.");
-			return 'en';
+		try {
+			const obj = await this.getForeignObjectAsync("system.config");
+			// 1. Prüfe, ob das Objekt existiert und die notwendigen Eigenschaften hat.
+			if (obj && obj.common && obj.common.language) {
+				const language = obj.common.language;
+				this.log.info(`Die konfigurierte Sprache ist: ${language}`);
+				return language;
+			} else {
+				// 2. Fallback, wenn das Objekt unvollständig ist.
+				this.log.warn("Sprache konnte nicht aus 'system.config' ermittelt werden. Verwende Standard 'en'.");
+				return "en";
+			}
+		} catch (e) {
+			// 3. Fehlerbehandlung, falls der Aufruf fehlschlägt.
+			this.log.error(`Fehler beim Abrufen der Systemkonfiguration: ${e.message}`);
+			return "en"; // Setze auch hier einen Standardwert
 		}
-	} catch (e) {
-		// 3. Fehlerbehandlung, falls der Aufruf fehlschlägt.
-		this.log.error(`Fehler beim Abrufen der Systemkonfiguration: ${e.message}`);
-		return 'en'; // Setze auch hier einen Standardwert
 	}
-}
-	
 
 	async getAllData() {
 		// This method can be used to fetch data from the API or perform other operations.
@@ -100,7 +98,7 @@ class TechEmodulI3 extends utils.Adapter {
 		const allData = {};
 		const allMenu = {};
 		this.log.info("Get all Tiles " + userid );
-			
+
 		for (const module of modules) {
 			const modId = module.id;
 			const udid = module.udid;
@@ -117,7 +115,7 @@ class TechEmodulI3 extends utils.Adapter {
 						break;
 					case 6:
 						console.log(`Tile: ID: ${tile.id}, Status: ${params.statusId} ` );
-						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,parseFloat(`${params.statusId}`), true);	
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,parseFloat(`${params.statusId}`), true);
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${params.widget1.value}`), true);
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${params.widget2.value}`), true);
 						break;
@@ -132,12 +130,13 @@ class TechEmodulI3 extends utils.Adapter {
 
 			allMenu[modName] = await this.getMenuData(userid, token, udid);
 			const elements = allMenu[`${modName}`]["data"]["elements"];
+			let mstate;
 			for (const element of elements) {
 				const params = element.params || {};
 				switch (element.type) {
 					case 1:
 						console.log(`Element: ID: ${element.id}, Value: ${params.value} ` );
-						const mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
+						mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
 						if ( mstate?.val !== params.value) {
 							console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} changed - Write` );
 							await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
@@ -148,10 +147,7 @@ class TechEmodulI3 extends utils.Adapter {
 		}
 
 	}
-	
-	/**
-	 * Is called when databases are connected and adapter received configuration.
-	 */
+
 	async onReady() {
 		// Initialize your adapter here
 		let s_Auto_Sommer_Temp = "";
@@ -184,15 +180,12 @@ class TechEmodulI3 extends utils.Adapter {
 		await this.setStateAsync("UserID", { val: userid, ack: true });
 		this.log.info("UserID: " + userid);
 		const s_userid = userid.toString();
-		const conf_obj = await this.getForeignObjectsAsync('system.config');
-		//if (conf_obj && conf_obj.common) {
-			conf_lang = await this.getLanguage();
-			this.log.info(`System language: ${conf_lang}`);
-		//}
+		conf_lang = await this.getLanguage();
+		this.log.info(`System language: ${conf_lang}`);
 		i18nList = await this.geti18nList(userid, token, conf_lang );
 		const i18nItem = i18nList["data"]["4622"];
 		this.log.info(`i18n Key: ${i18nItem} (${conf_lang})`);
-		
+
 		await this.setObjectNotExistsAsync(s_userid, {
 			type: "folder",
 			common: {
@@ -261,11 +254,11 @@ class TechEmodulI3 extends utils.Adapter {
 					let ptxt= "";
 					//const ptxt= i18nList["data"][`${element.txtId}`]
 					if (element.parentId == grouping_id) {
-						ptxt= `${grouping_name}/${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`
+						ptxt= `${grouping_name}/${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`;
 					} else {
-					    ptxt= `${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`
+						ptxt= `${i18nList["data"][`${element.txtId}`]}/${i18nList["data"][`${params.txtId}`]}`;
 					}
-				    console.log(`Elemet: ID: ${element.id}, txtId: ${element.txtId}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${params.value} ` );
+					console.log(`Elemet: ID: ${element.id}, txtId: ${element.txtId}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${params.value} ` );
 					await this.setObjectNotExistsAsync(`${s_userid}.${udid}.MU.${element.id}`, {
 						type: "state",
 						common: {
@@ -279,22 +272,20 @@ class TechEmodulI3 extends utils.Adapter {
 					});
 					await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
 					if (element.id == 4622) {
-					    s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
+						s_Auto_Sommer_Temp = `${s_userid}.${udid}.MU.${element.id}`;
 					}
 				}
-				
 			}
 
-			
 			for (const tile of tiles) {
 				let widget1= {};
 				let widget2= {};
 				let pval=0;
 				const params = tile.params || {};
-				let ptxt= `${i18nList["data"][`${params.txtId}`]}/${i18nList["data"][`${tile.txtId}`]}`
+				let ptxt= `${i18nList["data"][`${params.txtId}`]}/${i18nList["data"][`${tile.txtId}`]}`;
 				switch (tile.type) {
 					case 1:
-						ptxt= i18nList["data"][`${params.txtId}`]
+						ptxt= i18nList["data"][`${params.txtId}`];
 						pval = params.value / 10;
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
@@ -306,22 +297,22 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
 						break;
 					case 6:
 						widget1= params.widget1 || {};
+						widget2= params.widget2 || {};
 						pval =widget1.value;
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${widget1.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
 							type: "folder",
 							common: {
-							name: `${tile.id}`
+								name: `${tile.id}`
 							},
 							native: {},
 						});
-			
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.state`, {
 							type: "state",
 							common: {
@@ -331,7 +322,7 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,params.statusId, true);
 						ptxt= i18nList["data"][`${widget1.txtId}`];
@@ -344,7 +335,7 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${widget1.value}`), true);
 						ptxt= i18nList["data"][`${widget2.txtId}`];
@@ -357,20 +348,20 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${widget2.value}`), true);
 						break;
 					case 23:
-						ptxt= i18nList["data"][`${params.txtId}`]
+						ptxt= i18nList["data"][`${params.txtId}`];
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
 							type: "folder",
 							common: {
-							name: `${ptxt}`
+								name: `${ptxt}`
 							},
 							native: {},
-							});
+						});
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`, {
 							type: "state",
 							common: {
@@ -380,7 +371,7 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.setTemp`, {
@@ -392,7 +383,7 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.valvePump`, {
@@ -404,49 +395,15 @@ class TechEmodulI3 extends utils.Adapter {
 								read: true,
 								write: false
 							},
-						native: {},
+							native: {},
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
 						break;
 				}
 			}
-			
 		}
-		//this.log.info("Intervall starten " + this.config.Intervall);
-		setInterval(() => { this.getAllData()}, this.config.Intervall * 1000);
-		//this.subscribeStates("601931793.bebbe8daf62b8b2bd72b4c6c6a4ec6a2.Auto_Sommer_Temp");
-		//this.log.info(`SubscribeStates: ${s_Auto_Sommer_Temp}`);
-		this.subscribeStates(`${s_Auto_Sommer_Temp}`); 
-		
-		// This is a placeholder. Replace with the actual state path if needed.
-		// In order to get state updates, you need to subscribe to them. The following line adds a subscription for our variable we have created above.
-		// this.subscribeStates("testVariable");
-
-		// You can also add a subscription for multiple states. The following line watches all states starting with "lights."
-		// this.subscribeStates("lights.*");
-		// Or, if you really must, you can also watch all states. Don't do this if you don't need to. Otherwise this will cause a lot of unnecessary load on the system:
-		// this.subscribeStates("*");
-
-		/*
-			setState examples
-			you will notice that each setState will cause the stateChange event to fire (because of above subscribeStates cmd)
-		*/
-		// the variable testVariable is set to true as command (ack=false)
-		//await this.setStateAsync("testVariable", true);
-
-		// same thing, but the value is flagged "ack"
-		// ack should be always set to true if the value is received from or acknowledged from the target system
-		//await this.setStateAsync("testVariable", { val: true, ack: true });
-
-		// same thing, but the state is deleted after 30s (getState will return null afterwards)
-		//await this.setStateAsync("testVariable", { val: true, ack: true, expire: 30 });
-
-		// examples for the checkPassword/checkGroup functions
-		//let result = await this.checkPasswordAsync("admin", "iobroker");
-		//this.log.info("check user admin pw iobroker: " + result);
-
-		//result = await this.checkGroupAsync("admin", "admin");
-		//this.log.info("check group user admin group admin: " + result);
+		setInterval(() => { this.getAllData();}, this.config.Intervall * 1000);
+		this.subscribeStates(`${s_Auto_Sommer_Temp}`);
 	}
 
 	/**
@@ -482,26 +439,26 @@ class TechEmodulI3 extends utils.Adapter {
 			if (newValue !== null) {
 				this.log.info(`Auto Sommer Temp changed to: ${newValue}`);
 				const [userid, token] = await this.getAuthToken();
-				const s_userid = userid.toString();
+				//const s_userid = userid.toString();
 				const modules = await this.getModules(userid, token);
-				const allData = {};
-				const allMenu = {};
+				//const allData = {};
+				//const allMenu = {};
 				let udid = "";
 				for (const module of modules) {
-					const modId = module.id;
+					//const modId = module.id;
 					udid = module.udid;
 				}
 				//const headers1 = { "Authorization": `Bearer ${token}` };
-    			//const resp = await axios.post(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU/ido/4622`, { value: `${newValue}` }, { headers: `${headers1}`});
+				//const resp = await axios.post(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU/ido/4622`, { value: `${newValue}` }, { headers: `${headers1}`});
 				const status = await this.setModuleData(userid, token, udid, 4622, newValue);
+				if (status.status !== "success") {
+					this.log.error(`Error setting Auto Sommer Temp: ${status.message}`);
+				}
 			} else {
 				this.log.warn("Auto Sommer Temp state was deleted or set to null.");
 			}
 		}
-
 	}
-	
-	
 }
 
 if (require.main !== module) {
