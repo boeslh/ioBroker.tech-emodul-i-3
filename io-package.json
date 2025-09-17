@@ -1,59 +1,20 @@
 {
   "common": {
     "name": "tech-emodul-i-3",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "news": {
-      "1.0.4": {
+      "1.0.5": {
         "en": "- Bugfixing - check-and-lint",
-        "de": "- Fehlerbehebung - Prüfen und Lint",
+        "de": "- Fehlerbehebung - Überprüfung und Code-Optimierung",
         "ru": "- Исправление ошибок - проверка и линтинг",
-        "pt": "- Correção de bugs - verificação e lint.",
-        "nl": "- Bugfixes - controleer-en-lint",
+        "pt": "- Correção de bugs - verificação e formatação",
+        "nl": "- Bugs oplossen - check-en-lint",
         "fr": "- Correction de bugs - vérification et formatage",
         "it": "- Risoluzione dei bug - controllo e pulizia",
-        "es": "- Corrección de errores - revisión y formateo",
-        "pl": "- Naprawa błędów - sprawdzanie i formatowanie (lint)",
+        "es": "- Corrección de errores - revisión y formato",
+        "pl": "- Naprawa błędów - sprawdź i sformatuj",
         "uk": "- Виправлення помилок - перевірка та лінтинг",
-        "zh-cn": "- 故障修复 - 检查和清理"
-      },
-      "1.0.3": {
-        "en": "",
-        "de": "",
-        "ru": "",
-        "pt": "",
-        "nl": "",
-        "fr": "",
-        "it": "",
-        "es": "",
-        "pl": "",
-        "uk": "",
-        "zh-cn": ""
-      },
-      "1.0.2": {
-        "en": "",
-        "de": "",
-        "ru": "",
-        "pt": "",
-        "nl": "",
-        "fr": "",
-        "it": "",
-        "es": "",
-        "pl": "",
-        "uk": "",
-        "zh-cn": ""
-      },
-      "1.0.1": {
-        "en": "",
-        "de": "",
-        "ru": "",
-        "pt": "",
-        "nl": "",
-        "fr": "",
-        "it": "",
-        "es": "",
-        "pl": "",
-        "uk": "",
-        "zh-cn": ""
+        "zh-cn": "- 修复错误 - 检查和清理"
       },
       "1.0.0": {
         "en": "First Version to Publish",
@@ -80,19 +41,6 @@
         "pl": "Pierwsza wersja do opublikowania",
         "uk": "Перша версія для публікації",
         "zh-cn": "首次发布版本"
-      },
-      "0.1.0": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
