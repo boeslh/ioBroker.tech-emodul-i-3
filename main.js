@@ -33,61 +33,61 @@ class TechEmodulI3 extends utils.Adapter {
 	}
 
 	async getAuthToken() {
-    	/** Authentifiziert sich an der API und gibt ein Token zurück. */
-    	const resp = await axios.post(`${this.config.APIURL}/authentication`, {
-        	username: this.config.User,
-        	password: this.config.Password
-    	});
-    	return [resp.data.user_id, resp.data.token];
+			/** Authentifiziert sich an der API und gibt ein Token zurück. */
+			const resp = await axios.post(`${this.config.APIURL}/authentication`, {
+			username: this.config.User,
+			password: this.config.Password
+		});
+		return [resp.data.user_id, resp.data.token];
 	}
 	
 	async getModules(userid, token) {
-    	/** Liest die Liste aller Module, auf die der Benutzer Zugriff hat. */
-    	const headers = { "Authorization": `Bearer ${token}` };
-    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules`, { headers: headers });
-    	return resp.data;
+		/** Liest die Liste aller Module, auf die der Benutzer Zugriff hat. */
+		const headers = { "Authorization": `Bearer ${token}` };
+		const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules`, { headers: headers });
+		return resp.data;
 	}
 
 	async getModuleData(userid, token, udid) {
-    	/** Liest alle Daten eines spezifischen Moduls aus. */
-    	const headers = { "Authorization": `Bearer ${token}` };
-    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}`, { headers: headers });
-    	return resp.data;
+		/** Liest alle Daten eines spezifischen Moduls aus. */
+		const headers = { "Authorization": `Bearer ${token}` };
+		const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}`, { headers: headers });
+		return resp.data;
 	}
 
 	async getMenuData(userid, token, udid) {
-    	/** Liest alle Menüdaten eines spezifischen Moduls aus. */
-    	const headers = { "Authorization": `Bearer ${token}` };
-    	const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU`, { headers: headers });
-    	return resp.data;
+		/** Liest alle Menüdaten eines spezifischen Moduls aus. */
+		const headers = { "Authorization": `Bearer ${token}` };
+		const resp = await axios.get(`${this.config.APIURL}/users/${userid}/modules/${udid}/menu/MU`, { headers: headers });
+		return resp.data;
 	}
 
 	async geti18nList(userid, token, lang) {
-    	/** Liest alle Menüdaten eines spezifischen Moduls aus. */
-    	const headers = { "Authorization": `Bearer ${token}` };
-    	const resp = await axios.get(`${this.config.APIURL}/i18n/${lang}`, { headers: headers });
-    	return resp.data;
+		/** Liest alle Menüdaten eines spezifischen Moduls aus. */
+		const headers = { "Authorization": `Bearer ${token}` };
+		const resp = await axios.get(`${this.config.APIURL}/i18n/${lang}`, { headers: headers });
+		return resp.data;
 	}
 
 	async getLanguage() {
-    try {
-        const obj = await this.getForeignObjectAsync('system.config');
-        
-        // 1. Prüfe, ob das Objekt existiert und die notwendigen Eigenschaften hat.
-        if (obj && obj.common && obj.common.language) {
-            const language = obj.common.language;
-            this.log.info(`Die konfigurierte Sprache ist: ${language}`);
-            return language;
-        } else {
-            // 2. Fallback, wenn das Objekt unvollständig ist.
-            this.log.warn("Sprache konnte nicht aus 'system.config' ermittelt werden. Verwende Standard 'en'.");
-            return 'en';
-        }
-    } catch (e) {
-        // 3. Fehlerbehandlung, falls der Aufruf fehlschlägt.
-        this.log.error(`Fehler beim Abrufen der Systemkonfiguration: ${e.message}`);
-        return 'en'; // Setze auch hier einen Standardwert
-    }
+	try {
+		const obj = await this.getForeignObjectAsync('system.config');
+		
+		// 1. Prüfe, ob das Objekt existiert und die notwendigen Eigenschaften hat.
+		if (obj && obj.common && obj.common.language) {
+			const language = obj.common.language;
+			this.log.info(`Die konfigurierte Sprache ist: ${language}`);
+			return language;
+		} else {
+			// 2. Fallback, wenn das Objekt unvollständig ist.
+			this.log.warn("Sprache konnte nicht aus 'system.config' ermittelt werden. Verwende Standard 'en'.");
+			return 'en';
+		}
+	} catch (e) {
+		// 3. Fehlerbehandlung, falls der Aufruf fehlschlägt.
+		this.log.error(`Fehler beim Abrufen der Systemkonfiguration: ${e.message}`);
+		return 'en'; // Setze auch hier einen Standardwert
+	}
 }
 	
 
@@ -96,35 +96,35 @@ class TechEmodulI3 extends utils.Adapter {
 		const [userid, token] = await this.getAuthToken();
 		this.setStateAsync("UserID", { val: userid, ack: true });
 		const s_userid = userid.toString();
-        const modules = await this.getModules(userid, token);
+		const modules = await this.getModules(userid, token);
 		const allData = {};
-        const allMenu = {};
+		const allMenu = {};
 		this.log.info("Get all Tiles " + userid );
 			
-        for (const module of modules) {
-            const modId = module.id;
-            const udid = module.udid;
-            const modName = module.name || modId;
+		for (const module of modules) {
+			const modId = module.id;
+			const udid = module.udid;
+			const modName = module.name || modId;
 			this.log.info("Get all Tiles " + modName + " (ID: " + modId + ", UDID: " + udid + ")");
 			allData[modName] = await this.getModuleData(userid, token, udid);
-            const tiles = allData[`${modName}`]["tiles"];
+			const tiles = allData[`${modName}`]["tiles"];
 			for (const tile of tiles) {
 				const params = tile.params || {};
 				switch (tile.type) {
 					case 1:
 						console.log(`Tile: ID: ${tile.id}, Value: ${params.value} ` );
-					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
-					    break;
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}`,parseFloat(`${params.value / 10}`), true);
+						break;
 					case 6:
 						console.log(`Tile: ID: ${tile.id}, Status: ${params.statusId} ` );
-					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,parseFloat(`${params.statusId}`), true);	
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.state`,parseFloat(`${params.statusId}`), true);	
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget1`,parseFloat(`${params.widget1.value}`), true);
-					    await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${params.widget2.value}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${params.widget2.value}`), true);
 						break;
 					case 23:
 						console.log(`Tile: ID: ${tile.id}, Status: ${params.currentTemp / 10} ` );
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
-                        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
 						break;
 				}
@@ -137,12 +137,12 @@ class TechEmodulI3 extends utils.Adapter {
 				switch (element.type) {
 					case 1:
 						console.log(`Element: ID: ${element.id}, Value: ${params.value} ` );
-					    const mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
+						const mstate = await this.getStateAsync(`${s_userid}.${udid}.MU.${element.id}`);
 						if ( mstate?.val !== params.value) {
-						    console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} changed - Write` );
+							console.log(`Element: ID: ${element.id}, txtId: ${element.txtId}, Value: ${params.value} changed - Write` );
 							await this.setState(`${s_userid}.${udid}.MU.${element.id}`,parseInt(`${params.value}`), true);
 						}
-					    break;
+						break;
 				}
 			}
 		}
@@ -169,11 +169,6 @@ class TechEmodulI3 extends utils.Adapter {
 			return;
 		}
 
-		/*
-		For every state in the system there has to be also an object of type state
-		Here a simple template for a boolean variable named "testVariable"
-		Because every adapter instance uses its own unique namespace variable names can't collide with other adapters variables
-		*/
 		await this.setObjectNotExistsAsync("UserID", {
 			type: "state",
 			common: {
@@ -208,15 +203,15 @@ class TechEmodulI3 extends utils.Adapter {
 
 		const modules = await this.getModules(userid, token);
 		const allData = {};
-        const allMenu = {};
+		const allMenu = {};
 
-        for (const module of modules) {
-            const modId = module.id;
-            const udid = module.udid;
-            const modName = module.name || modId;
+		for (const module of modules) {
+			const modId = module.id;
+			const udid = module.udid;
+			const modName = module.name || modId;
 			this.log.info(`Module: ${modName} (ID: ${modId}, UDID: ${udid})`);
 			// generate Folder for each Device
-            await this.setObjectNotExistsAsync(`${s_userid}.${udid}`, {
+			await this.setObjectNotExistsAsync(`${s_userid}.${udid}`, {
 				type: "folder",
 				common: {
 					name: udid
@@ -250,8 +245,8 @@ class TechEmodulI3 extends utils.Adapter {
 			});
 			await this.setState(`${s_userid}.${udid}.Name`,`${modName}`, true);
 			allData[modName] = await this.getModuleData(userid, token, udid);
-            allMenu[modName] = await this.getMenuData(userid, token, udid);
-        
+			allMenu[modName] = await this.getMenuData(userid, token, udid);
+
 			const tiles = allData[`${modName}`]["tiles"];
 			const elements = allMenu[`${modName}`]["data"]["elements"];
 
@@ -320,12 +315,12 @@ class TechEmodulI3 extends utils.Adapter {
 						pval =widget1.value;
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${widget1.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
-				            type: "folder",
-				            common: {
-					        name: `${tile.id}`
-				            },
-				            native: {},
-			                });
+							type: "folder",
+							common: {
+							name: `${tile.id}`
+							},
+							native: {},
+						});
 			
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.state`, {
 							type: "state",
@@ -366,16 +361,16 @@ class TechEmodulI3 extends utils.Adapter {
 						});
 						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.widget2`,parseFloat(`${widget2.value}`), true);
 						break;
-				    case 23:
+					case 23:
 						ptxt= i18nList["data"][`${params.txtId}`]
 						console.log(`Tiles: ID: ${tile.id}, txtId: ${params.txtId}, Text: ${ptxt}, Value: ${pval} ` );
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}`, {
-				            type: "folder",
-				            common: {
-					        name: `${ptxt}`
-				            },
-				            native: {},
-			                });
+							type: "folder",
+							common: {
+							name: `${ptxt}`
+							},
+							native: {},
+							});
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`, {
 							type: "state",
 							common: {
@@ -387,7 +382,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.currentTemp / 10}`), true);
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.setTemp`, {
 							type: "state",
 							common: {
@@ -399,7 +394,7 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.setTemp}`), true);
 						await this.setObjectNotExistsAsync(`${s_userid}.${udid}.Tiles.${tile.id}.valvePump`, {
 							type: "state",
 							common: {
@@ -411,8 +406,8 @@ class TechEmodulI3 extends utils.Adapter {
 							},
 						native: {},
 						});
-				        await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
-						
+						await this.setState(`${s_userid}.${udid}.Tiles.${tile.id}.currentTemp`,parseFloat(`${params.valvePump}`), true);
+						break;
 				}
 			}
 			
@@ -505,62 +500,7 @@ class TechEmodulI3 extends utils.Adapter {
 		}
 
 	}
-	//onStateChange(""`${s_userid}.${udid}.Auto_Sommer_Temp`", (id, state) => {
-	//	const newValue = state.val;
-	//	//this.log.info(`Auto Sommer Temp changed to: ${newValue}`);
-	//	console.log(`Auto Sommer Temp changed to: ${newValue}`);	
-	//});
-
-	// If you need to react to object changes, uncomment the following block and the corresponding line in the constructor.
-	// You also need to subscribe to the objects with `this.subscribeObjects`, similar to `this.subscribeStates`.
-	// /**
-	//  * Is called if a subscribed object changes
-	//  * @param {string} id
-	//  * @param {ioBroker.Object | null | undefined} obj
-	//  */
-	// onObjectChange(id, obj) {
-	// 	if (obj) {
-	// 		// The object was changed
-	// 		this.log.info(`object ${id} changed: ${JSON.stringify(obj)}`);
-	// 	} else {
-	// 		// The object was deleted
-	// 		this.log.info(`object ${id} deleted`);
-	// 	}
-	// }
-
-	/**
-	 * Is called if a subscribed state changes
-	 * @param {string} id
-	 * @param {ioBroker.State | null | undefined} state
-	 */
-	//onStateChange(id, state) {
-	//	if (state) {
-	//		// The state was changed
-	//		this.log.info(`state ${id} changed: ${state.val} (ack = ${state.ack})`);
-	//	} else {
-	//		// The state was deleted
-	//		this.log.info(`state ${id} deleted`);
-	//	}
-	//}
-
-	// If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
-	// /**
-	//  * Some message was sent to this instance over message box. Used by email, pushover, text2speech, ...
-	//  * Using this method requires "common.messagebox" property to be set to true in io-package.json
-	//  * @param {ioBroker.Message} obj
-	//  */
-	// onMessage(obj) {
-	// 	if (typeof obj === "object" && obj.message) {
-	// 		if (obj.command === "send") {
-	// 			// e.g. send email or pushover or whatever
-	// 			this.log.info("send command");
-
-	// 			// Send response in callback if required
-	// 			if (obj.callback) this.sendTo(obj.from, obj.command, "Message received", obj.callback);
-	// 		}
-	// 	}
-	// }
-
+	
 	
 }
 
