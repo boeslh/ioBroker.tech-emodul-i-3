@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tech-emodul-i-3",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "news": {
+      "1.0.7": {
+        "en": "- Bugfixing - sentry Error",
+        "de": "- Fehlerbehebung - Sentry-Fehler",
+        "ru": "- Исправление ошибок - ошибка sentry",
+        "pt": "- Correção de bug - erro do sentry",
+        "nl": "- Bugfixing - Sentry-fout",
+        "fr": "- Correction de bugs - Erreur sentry",
+        "it": "- Risoluzione dei bug - Errore sentry",
+        "es": "- Corrección de errores - Error de sentry",
+        "pl": "- Naprawiono błędy - błąd sentry",
+        "uk": "- Виправлення помилок - помилка sentry",
+        "zh-cn": "- 修复错误 - sentry错误"
+      },
       "1.0.6": {
         "en": "- Bugfixing - check-and-lint",
         "de": "- Fehlerbehebung - Überprüfen und Linten",
