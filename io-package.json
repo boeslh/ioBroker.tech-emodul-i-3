@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "tech-emodul-i-3",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "news": {
+      "1.0.6": {
+        "en": "- Bugfixing - check-and-lint",
+        "de": "- Fehlerbehebung - Überprüfen und Linten",
+        "ru": "- Исправление ошибок - проверка и линтинг",
+        "pt": "- Correção de bugs - verificação e lint_literals",
+        "nl": "- Bugfixing - check-en-lint",
+        "fr": "- Correction de bugs - vérification et formatage",
+        "it": "- Risoluzione di bug - controllo e correzione",
+        "es": "- Corrección de errores - verificar y optimizar",
+        "pl": "- Naprawa błędów - sprawdzanie i czyszczenie",
+        "uk": "- Виправлення помилок - перевірка та лінтування",
+        "zh-cn": "- 修复错误 - 检查和清理"
+      },
       "1.0.5": {
         "en": "- Bugfixing - check-and-lint",
         "de": "- Fehlerbehebung - Überprüfung und Code-Optimierung",
