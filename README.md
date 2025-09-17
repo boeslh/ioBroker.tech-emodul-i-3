@@ -21,6 +21,9 @@ Install the Adapter, Configure Username and Password
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+* (Hubert Boesl) - Bugfixing - sentry Error
+
 ### 1.0.6 (2025-09-17)
 * (Hubert Boesl) - Bugfixing - check-and-lint
 
